@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<menu>
+  <item>
+    <path>civicrm/contact/usermgmt</path>
+    <path_arguments>cid=%%cid%%</path_arguments>
+    <page_callback>CRM_Usermgmt_Form_UserManagement</page_callback>
+    <title>User Management</title>
+    <access_arguments>access CiviCRM</access_arguments>
+  </item>
+</menu>
