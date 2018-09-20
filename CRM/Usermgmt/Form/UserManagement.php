@@ -260,19 +260,12 @@ class CRM_Usermgmt_Form_UserManagement extends CRM_Core_Form {
     $config = CRM_Core_Config::singleton();
     if ($config->userSystem->is_drupal) {
       $users = db_select('users', 'u')->fields('u', array('uid', 'name'))->execute()->fetchAll();
-      echo '<pre>';
-      print_r($users);
-      echo '</pre>';
     }
     elseif ($config->userFramework == 'WordPress') {
-      echo '<pre>';
-      print_r($system);
-      echo '</pre>';
+     
     }
     elseif ($config->userFramework == 'Joomla') {
-      echo '<pre>';
-      print_r($system);
-      echo '</pre>';
+      
     }
   }
 
