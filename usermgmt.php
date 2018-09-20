@@ -168,7 +168,19 @@ function usermgmt_civicrm_navigationMenu(&$menu) {
  */
 function usermgmt_civicrm_summaryActions(&$actions, $contactID) {
   $uid = CRM_Core_BAO_UFMatch::getUFId($contactID);
-    if ($uid) {
+    if ( CRM_Contact_BAO_Contact_Permission::allow($contactID, CRM_Core_Permission::EDIT) ){
+      $actions['otherActions']['user-connection'] = array(
+        'title' => 'Manage User Connection',
+        'description' => ts('Manage User Connection'),
+        'weight' => 999,
+        'ref' => 'user-connection',
+        'key' => 'user-connection',
+        'class' => 'crm-popup',
+        'href' => CRM_Utils_System::url('civicrm/contact/usermgmt', 'reset=1'),
+        'icon' => 'crm-i fa-user-plus',
+      );      
+    }
+    elseif ($uid) {
       $actions['otherActions']['user-connection'] = array(
        'title' => 'User Connection',
         'weight' => 999,
@@ -180,16 +192,7 @@ function usermgmt_civicrm_summaryActions(&$actions, $contactID) {
         'icon' => 'crm-i fa-user',
       );
     }
-    elseif (CRM_Core_Config::singleton()->userSystem->checkPermissionAddUser()) {
-      $actions['otherActions']['user-connection'] = array(
-        'title' => 'Manage User Connection',
-        'description' => ts('Manage User Connection'),
-        'weight' => 999,
-        'ref' => 'user-connection',
-        'key' => 'user-connection',
-        'class' => 'crm-popup',
-        'href' => CRM_Utils_System::url('civicrm/contact/usermgmt', 'reset=1'),
-        'icon' => 'crm-i fa-user-plus',
-      );
+    else{
+      //nothing to implement
     }
  }

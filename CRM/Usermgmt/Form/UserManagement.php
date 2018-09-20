@@ -13,7 +13,14 @@ class CRM_Usermgmt_Form_UserManagement extends CRM_Core_Form {
    *
    * @var int
    */
+   
   public $_contactId;
+  /**
+   * Contact.display_name of contact for whom we are adding user
+   *
+   * @var int
+   */
+  public $_displayName;
   
   /**
    * Build all the data structures needed to build the form.
@@ -22,15 +29,39 @@ class CRM_Usermgmt_Form_UserManagement extends CRM_Core_Form {
     $this->_contactId = CRM_Utils_Request::retrieve('cid', 'Positive', $this, TRUE);
     $this->set('contactId', $this->_contactId);
     $this->assign('contactId', $this->_contactId);
+    
+    $params = $defaults = $ids = array();
+    $params['id'] = $params['contact_id'] = $this->_contactId;
+    $contact = CRM_Contact_BAO_Contact::retrieve($params, $defaults, $ids);
+    $this->_displayName = $contact->display_name;
   }
   
    /**
    * Build the form object.
    */
   public function buildQuickForm() {
+    $users = self::_get_CMS_user_lists();
     // add form elements
-    $this->add('hidden', 'ContactID', ts(''));
-    $this->addEntityRef('contact_list', ts('Select Contact'));
+    $element = $this->add('text', 'ContactID', ts('Contact ID'), array('class' => 'huge'));
+    $element->freeze();
+    
+    $element = $this->add('text', 'name', ts('Contact Name'), array('class' => 'huge'));
+    $element->freeze();
+    //$this->add('hidden', 'ContactID', ts(''));
+    $this->addEntityRef('user_lists', ts('Select User'), array( 'entity' => 'user', 'placeholder' => ts('- Select User -'), ));
+    
+    $cid = $this->_contactId;
+    $uf_id = CRM_Core_BAO_UFMatch::getUFId($cid);
+    if($uf_id){
+      $element = $this->add('text', 'UserID', ts('User ID'), array('class' => 'huge'));
+      $element->freeze();
+      
+      $element = $this->add('text', 'uname', ts('User Name'), array('class' => 'huge'));
+      $element->freeze();
+      
+      $element = $this->add('text', 'email', ts('Email'), array('class' => 'huge'));
+      $element->freeze();
+    }
     $this->addButtons(array(
       array(
         'type' => 'submit',
@@ -49,33 +80,22 @@ class CRM_Usermgmt_Form_UserManagement extends CRM_Core_Form {
    */
   public function setDefaultValues() {
     $defaults = array();
+    $defaults['name'] = $this->_displayName;
+    
     $cid = $this->_contactId;
     $defaults['ContactID'] = $cid;
-    if( !empty($cid) ){
-      try{
-        $result = civicrm_api3('UFMatch', 'get', array( 'contact_id' => $cid,));
+    $uf_id = CRM_Core_BAO_UFMatch::getUFId($cid);
+    $defaults['user_lists'] = $uf_id;
+    if($uf_id){
+      $result = civicrm_api3('User', 'get', array('sequential' => 1, 'id' => $uf_id, ));
+      foreach( $result['values'] as $values){
+        $defaults['UserID'] = $uf_id;
+        $defaults['uname'] = CRM_Utils_Array::value('name', $values);
+        $defaults['email'] = CRM_Utils_Array::value('email', $values);
       }
-      catch (CiviCRM_API3_Exception $e) {
-        // Handle error here.
-        $errorMessage = $e->getMessage();
-        $errorCode = $e->getErrorCode();
-        $errorData = $e->getExtraParams();
-        return array(
-          'is_error' => 1,
-          'error_message' => $errorMessage,
-          'error_code' => $errorCode,
-          'error_data' => $errorData,
-        );
-      }
-      if(!empty($result['values'])){
-        foreach( $result['values'] as $values){
-          $uf_id = CRM_Utils_Array::value('uf_id', $values);
-          if( !empty($uf_id) ){
-            $defaults['contact_list'] = $uf_id;
-          }
-        }
-      }
+      
     }
+    
     return $defaults;
   }
   
@@ -104,7 +124,7 @@ class CRM_Usermgmt_Form_UserManagement extends CRM_Core_Form {
   public static function formRule($fields) {
      $errors = array();
     $ContactID = CRM_Utils_Array::value('ContactID', $fields);
-    $contact_list = CRM_Utils_Array::value('contact_list', $fields);
+    $contact_list = CRM_Utils_Array::value('user_lists', $fields);
     if( !empty($contact_list) ){
       try{
         $result = civicrm_api3('UFMatch', 'get', array('uf_id' => $contact_list,));
@@ -144,7 +164,7 @@ class CRM_Usermgmt_Form_UserManagement extends CRM_Core_Form {
     $values = $this->exportValues();
         
     $ContactID = CRM_Utils_Array::value('ContactID', $values);
-    $contact_list = CRM_Utils_Array::value('contact_list', $values);
+    $contact_list = CRM_Utils_Array::value('user_lists', $values);
     
     if( !empty($contact_list) ){
       //get uf_name
@@ -181,6 +201,7 @@ class CRM_Usermgmt_Form_UserManagement extends CRM_Core_Form {
           'error_data' => $errorData,
         );
       }
+      $status = ts('User Connection Updated for the contact');
     }
     //delete uf_match if unselected
     else{
@@ -201,9 +222,12 @@ class CRM_Usermgmt_Form_UserManagement extends CRM_Core_Form {
       }
       $uf_id = CRM_Utils_Array::value('id', $result);
       if( !empty($uf_id) ){
-         $result = civicrm_api3('UFMatch', 'delete', array('id' =>  $uf_id,));
-      }     
+        $result = civicrm_api3('UFMatch', 'delete', array('id' =>  $uf_id,));
+        $status = ts('User Connection deleted for the contact');
+      } 
     }
+    CRM_Core_Session::setStatus($status, ts('User Connection'), 'success');
+    CRM_Core_Session::singleton()->pushUserContext($this->refreshURL);
   }
 
   /**
@@ -225,6 +249,25 @@ class CRM_Usermgmt_Form_UserManagement extends CRM_Core_Form {
       }
     }
     return $elementNames;
+  }
+  /**
+   * Get the list of users.
+   *
+   * @return array (string)
+   */
+  function _get_CMS_user_lists(){
+    global $civicrm_root;
+    $config = CRM_Core_Config::singleton();
+    if ($config->userSystem->is_drupal) {
+      $users = db_select('users', 'u')->fields('u', array('uid', 'name'))->execute()->fetchAll();
+      
+    }
+    elseif ($config->userFramework == 'WordPress') {
+     
+    }
+    elseif ($config->userFramework == 'Joomla') {
+      
+    }
   }
 
 }
