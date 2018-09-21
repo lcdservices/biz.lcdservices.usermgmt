@@ -40,7 +40,6 @@ class CRM_Usermgmt_Form_UserManagement extends CRM_Core_Form {
    * Build the form object.
    */
   public function buildQuickForm() {
-    $users = self::_get_CMS_user_lists();
     // add form elements
     $element = $this->add('text', 'ContactID', ts('Contact ID'), array('class' => 'huge'));
     $element->freeze();
@@ -48,7 +47,7 @@ class CRM_Usermgmt_Form_UserManagement extends CRM_Core_Form {
     $element = $this->add('text', 'name', ts('Contact Name'), array('class' => 'huge'));
     $element->freeze();
     //$this->add('hidden', 'ContactID', ts(''));
-    $this->addEntityRef('user_lists', ts('Select User'), array( 'entity' => 'user', 'placeholder' => ts('- Select User -'), ));
+    $this->addEntityRef('user_lists', ts('Select User'), array( 'entity' => 'userlist', 'placeholder' => ts('- Select User -'), ));
     
     $cid = $this->_contactId;
     $uf_id = CRM_Core_BAO_UFMatch::getUFId($cid);
@@ -166,6 +165,7 @@ class CRM_Usermgmt_Form_UserManagement extends CRM_Core_Form {
     $ContactID = CRM_Utils_Array::value('ContactID', $values);
     $contact_list = CRM_Utils_Array::value('user_lists', $values);
     
+    
     if( !empty($contact_list) ){
       //get uf_name
       $uf_name = '';
@@ -185,7 +185,7 @@ class CRM_Usermgmt_Form_UserManagement extends CRM_Core_Form {
         'uf_id' => $contact_list,
         'uf_name' => $uf_name,
         'contact_id' => $ContactID,
-      );
+      );    
       try{
         $result = civicrm_api3('UFMatch', 'Create', $params);
       }
@@ -250,23 +250,4 @@ class CRM_Usermgmt_Form_UserManagement extends CRM_Core_Form {
     }
     return $elementNames;
   }
-  /**
-   * Get the list of users.
-   *
-   * @return array (string)
-   */
-  function _get_CMS_user_lists(){
-    global $civicrm_root;
-    $config = CRM_Core_Config::singleton();
-    if ($config->userSystem->is_drupal) {
-      $users = db_select('users', 'u')->fields('u', array('uid', 'name'))->execute()->fetchAll();
-    }
-    elseif ($config->userFramework == 'WordPress') {
-     
-    }
-    elseif ($config->userFramework == 'Joomla') {
-      
-    }
-  }
-
 }

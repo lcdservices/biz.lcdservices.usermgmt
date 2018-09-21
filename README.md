@@ -22,7 +22,7 @@ install it with the command-line tool [cv](https://github.com/civicrm/cv).
 
 ```bash
 cd <extension-dir>
-cv dl biz.lcdservices.usermgmt@https://github.com/FIXME/biz.lcdservices.usermgmt/archive/master.zip
+cv dl biz.lcdservices.usermgmt@https://github.com/lcdservices/biz.lcdservices.usermgmt/archive/master.zip
 ```
 
 ## Installation (CLI, Git)

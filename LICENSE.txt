@@ -1,5 +1,5 @@
 Package: biz.lcdservices.usermgmt
-Copyright (C) 2018, Zoyee <karun.anju11@gmail.com>
+Copyright (C) 2018, Zoyee <dev@lcdservices.biz>
 Licensed under the GNU Affero Public License 3.0 (below).
 
 -------------------------------------------------------------------------------
