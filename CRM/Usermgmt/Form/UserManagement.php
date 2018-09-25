@@ -161,25 +161,14 @@ class CRM_Usermgmt_Form_UserManagement extends CRM_Core_Form {
    */
   public function postProcess() {
     $values = $this->exportValues();
-        
+    $status = ts('User Connection updated for the contact');
+    
     $ContactID = CRM_Utils_Array::value('ContactID', $values);
-    $contact_list = CRM_Utils_Array::value('user_lists', $values);
-    
-    
+    $contact_list = CRM_Utils_Array::value('user_lists', $values);    
     if( !empty($contact_list) ){
+      $user = user_load($contact_list);
       //get uf_name
-      $uf_name = '';
-      $result = civicrm_api3('Contact', 'get', array(
-        'sequential' => 1,
-        'return' => array("email"),
-        'id' => $ContactID,
-      ));
-      
-      if( !empty($result['values']) ){
-        foreach( $result['values'] as $values){
-          $uf_name = CRM_Utils_Array::value('email', $values);
-        }
-      }
+      $uf_name = $user->mail;
       //set uf_match for the contact      
       $params = array(
         'uf_id' => $contact_list,

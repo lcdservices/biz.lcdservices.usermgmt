@@ -47,24 +47,31 @@ function civicrm_api3_userlist_get($params) {
   $config = CRM_Core_Config::singleton();
   if ($config->userSystem->is_drupal) {
     $query = db_select('users', 'u')->fields('u', array('uid', 'name', 'mail'));
-    $db_or = db_or();
-    foreach ($inputParams as $field=>$value) {
-      if($field == '_id'){
-        $column = 'u.uid';
-      }
-      else{
-        $column = 'u.'.$field;
-      }
-      foreach ($value as $opkey=>$opvalue) {
-        if($field == 'name'){
-          $db_or->condition('u.mail', $opvalue, $opkey);
+    if( !empty($inputParams) ){
+      $db_or = db_or();
+      foreach ($inputParams as $field=>$value) {
+        if($field == '_id'){
+          $column = 'u.uid';
         }
-        $db_or->condition($column, $opvalue, $opkey);
+        else{
+          $column = 'u.'.$field;
+        }
+        if( is_array($value) ){
+          foreach ($value as $opkey=>$opvalue) {
+            if($field == 'name'){
+              $db_or->condition('u.mail', $opvalue, $opkey);
+            }
+            $db_or->condition($column, $opvalue, $opkey);
+          }
+        }
+        else{
+           $db_or->condition($column, $value);
+        }
+        
       }
-    }
-    $query->condition($db_or);
+      $query->condition($db_or);
+    }  
     $users = $query->execute()->fetchAll();
-    
     $result = array();
     foreach($users as $key=>$user_list) {
       if( !empty($user_list->uid) ) {
