@@ -42,7 +42,7 @@ function civicrm_api3_userlist_get($params) {
   $options = _civicrm_api3_get_options_from_params($params, TRUE);
   $inputParams = CRM_Utils_Array::value('input_params', $options, array());
   $newParams = CRM_Contact_BAO_Query::convertFormValues($inputParams);
-  
+  $result = array();
   global $civicrm_root;
   $config = CRM_Core_Config::singleton();
   if ($config->userSystem->is_drupal) {
@@ -72,7 +72,6 @@ function civicrm_api3_userlist_get($params) {
       $query->condition($db_or);
     }  
     $users = $query->execute()->fetchAll();
-    $result = array();
     foreach($users as $key=>$user_list) {
       if( !empty($user_list->uid) ) {
         $result[$user_list->uid] = array('id'=>$user_list->uid, 'name'=> $user_list->name, 'email'=> $user_list->mail );
@@ -80,6 +79,43 @@ function civicrm_api3_userlist_get($params) {
     }
   }
   elseif ($config->userFramework == 'WordPress') {
+    global $wpdb;
+    $clause = array();
+    if( !empty($inputParams) ){
+      foreach ($inputParams as $field=>$value) {
+        if($field == '_id'){
+          $column = 'ID';
+        }
+       if($field == 'name'){
+          $column = 'user_login';
+        }
+        if( is_array($value) ){
+          foreach ($value as $opkey=>$opvalue) {
+            if($field == 'name'){
+              $clause[] = "user_email $opkey '$opvalue'";
+            }
+            if($opkey == 'IN'){
+              $opstringvalue = implode(',', $opvalue);
+              $clause[] = "$column $opkey ($opstringvalue)";
+            }
+            else{
+              $clause[] = "$column $opkey '$opvalue'";
+            }
+          }
+        }
+        else{
+          $clause[] = "$column = '$value'";
+        }
+      }
+    }
+    $whereClause = !empty($clause) ? implode(' OR ', $clause) : '(1)';
+    $sql = "SELECT $wpdb->users.ID FROM $wpdb->users WHERE $whereClause";
+    $wpUserIds = $wpdb->get_col($sql);
+    foreach ($wpUserIds as $wpUserId) {
+      $wpUserData = get_userdata($wpUserId);
+      $result[$wpUserData->ID] = array('id'=>$wpUserData->ID, 'name'=> $wpUserData->user_login, 'email'=> $wpUserData->user_email );
+    }
+    
   }
   elseif ($config->userFramework == 'Joomla') {
   }
