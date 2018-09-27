@@ -28,9 +28,6 @@ class CRM_Usermgmt_Form_UserManagement extends CRM_Core_Form {
   public function preProcess() {
     $this->preventAjaxSubmit();
     $this->_contactId = CRM_Utils_Request::retrieve('cid', 'Positive', $this, TRUE);
-    $url = CRM_Utils_System::url("civicrm/contact/view", "reset=1&cid={$this->_contactId}");
-    CRM_Core_Session::singleton()->replaceUserContext($url);
-    
     $this->set('contactId', $this->_contactId);
     $this->assign('contactId', $this->_contactId);
     
@@ -153,7 +150,7 @@ class CRM_Usermgmt_Form_UserManagement extends CRM_Core_Form {
           $uf_contactID = CRM_Utils_Array::value('contact_id', $result);
         }
         if( $ContactID != $uf_contactID ){
-          $errors['contact_list'] = ts('This contact is already connected with another user');
+          $errors['user_lists'] = ts('This contact is already connected with another user');
         }
       }
     }
@@ -168,28 +165,17 @@ class CRM_Usermgmt_Form_UserManagement extends CRM_Core_Form {
     $status = ts('User Connection updated for the contact');
     
     $ContactID = CRM_Utils_Array::value('ContactID', $values);
-    $contact_list = CRM_Utils_Array::value('user_lists', $values);   
+    $contact_list = CRM_Utils_Array::value('user_lists', $values);    
     if( !empty($contact_list) ){
-      $uf_name = '';
-      $config = CRM_Core_Config::singleton();
-      if ($config->userSystem->is_drupal) {
-        $user = user_load($contact_list);
-        //get uf_name
-        $uf_name = $user->mail;
-      }
-      elseif ($config->userFramework == 'WordPress') {
-        $wpUserData = get_userdata($contact_list);
-        $uf_name = $wpUserData->user_email;
-      }
-      elseif ($config->userFramework == 'Joomla') {
-        
-      }      
+      $user = user_load($contact_list);
+      //get uf_name
+      $uf_name = $user->mail;
       //set uf_match for the contact      
       $params = array(
         'uf_id' => $contact_list,
         'uf_name' => $uf_name,
         'contact_id' => $ContactID,
-      );  
+      );    
       try{
         $result = civicrm_api3('UFMatch', 'Create', $params);
       }
@@ -226,7 +212,7 @@ class CRM_Usermgmt_Form_UserManagement extends CRM_Core_Form {
       }
       $uf_id = CRM_Utils_Array::value('id', $result);
       if( !empty($uf_id) ){
-        $result = civicrm_api3('UFMatch', 'delete', array('id' => $uf_id,));
+        $result = civicrm_api3('UFMatch', 'delete', array('id' =>  $uf_id,));
         $status = ts('User Connection deleted for the contact');
       } 
     }
@@ -236,7 +222,7 @@ class CRM_Usermgmt_Form_UserManagement extends CRM_Core_Form {
       $qfKey = CRM_Utils_Request::retrieve('qfKey', 'String', $this);
     }
     $url = CRM_Utils_System::url("civicrm/contact/view", "reset=1&cid={$ContactID}&context=search&key={$qfKey}");
-    CRM_Core_Session::singleton()->pushUserContext($url);
+    CRM_Core_Session::singleton()->replaceUserContext($url);
     CRM_Utils_System::redirect($url);
     
   }

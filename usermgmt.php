@@ -168,7 +168,7 @@ function usermgmt_civicrm_navigationMenu(&$menu) {
  */
 function usermgmt_civicrm_summaryActions(&$actions, $contactID) {
   $uid = CRM_Core_BAO_UFMatch::getUFId($contactID);
-    if ( CRM_Contact_BAO_Contact_Permission::allow($contactID, CRM_Core_Permission::EDIT) ){
+    if ( $contactID && CRM_Contact_BAO_Contact_Permission::allow($contactID, CRM_Core_Permission::EDIT) ){
       $actions['otherActions']['user-connection'] = array(
         'title' => 'Manage User Connection',
         'description' => ts('Manage User Connection'),
