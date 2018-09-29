@@ -134,65 +134,37 @@ function usermgmt_civicrm_entityTypes(&$entityTypes) {
   _usermgmt_civix_civicrm_entityTypes($entityTypes);
 }
 
-// --- Functions below this ship commented out. Uncomment as required. ---
-
-/**
- * Implements hook_civicrm_preProcess().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_preProcess
- *
-function usermgmt_civicrm_preProcess($formName, &$form) {
-
-} // */
-
-/**
- * Implements hook_civicrm_navigationMenu().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_navigationMenu
- *
-function usermgmt_civicrm_navigationMenu(&$menu) {
-  _usermgmt_civix_insert_navigation_menu($menu, 'Mailings', array(
-    'label' => E::ts('New subliminal message'),
-    'name' => 'mailing_subliminal_message',
-    'url' => 'civicrm/mailing/subliminal',
-    'permission' => 'access CiviMail',
-    'operator' => 'OR',
-    'separator' => 0,
-  ));
-  _usermgmt_civix_navigationMenu($menu);
-} // */
-
 /**
  * Implements hook_civicrm_summaryActions().
  *
  */
 function usermgmt_civicrm_summaryActions(&$actions, $contactID) {
   $uid = CRM_Core_BAO_UFMatch::getUFId($contactID);
-    if ( $contactID && CRM_Contact_BAO_Contact_Permission::allow($contactID, CRM_Core_Permission::EDIT) ){
-      $actions['otherActions']['user-connection'] = array(
-        'title' => 'Manage User Connection',
-        'description' => ts('Manage User Connection'),
-        'weight' => 999,
-        'ref' => 'user-connection',
-        'key' => 'user-connection',
-        'class' => 'crm-popup',
-        'href' => CRM_Utils_System::url('civicrm/contact/usermgmt', 'reset=1'),
-        'icon' => 'crm-i fa-user-plus',
-      );      
-    }
-    elseif ($uid) {
-      $actions['otherActions']['user-connection'] = array(
-       'title' => 'User Connection',
-        'weight' => 999,
-        'description' => ts('User Connection'),
-        'ref' => 'user-connection',
-        'key' => 'user-connection',
-        'class' => 'user-connection',
-        'href' => CRM_Core_Config::singleton()->userSystem->getUserRecordUrl($contactID),
-        'icon' => 'crm-i fa-user',
-      );
-    }
-    else{
-      //nothing to implement
-    }
+  if ($contactID && CRM_Contact_BAO_Contact_Permission::allow($contactID, CRM_Core_Permission::EDIT)) {
+    $actions['otherActions']['user-connection'] = array(
+      'title' => 'Manage User Connection',
+      'description' => ts('Manage User Connection'),
+      'weight' => 999,
+      'ref' => 'user-connection',
+      'key' => 'user-connection',
+      'class' => 'crm-popup',
+      'href' => CRM_Utils_System::url('civicrm/contact/usermgmt', 'reset=1'),
+      'icon' => 'crm-i fa-user-plus',
+    );
+  }
+  elseif ($uid) {
+    $actions['otherActions']['user-connection'] = array(
+     'title' => 'User Connection',
+      'weight' => 999,
+      'description' => ts('User Connection'),
+      'ref' => 'user-connection',
+      'key' => 'user-connection',
+      'class' => 'user-connection',
+      'href' => CRM_Core_Config::singleton()->userSystem->getUserRecordUrl($contactID),
+      'icon' => 'crm-i fa-user',
+    );
+  }
+  else{
+    //nothing to implement
+  }
  }
