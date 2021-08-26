@@ -167,9 +167,43 @@ class CRM_Usermgmt_Form_UserManagement extends CRM_Core_Form {
     $ContactID = CRM_Utils_Array::value('ContactID', $values);
     $contact_list = CRM_Utils_Array::value('user_lists', $values);    
     if( !empty($contact_list) ){
-      $user = user_load($contact_list);
-      //get uf_name
-      $uf_name = $user->mail;
+
+      $config = CRM_Core_Config::singleton();
+      $uf_name = null;
+      switch ($config->userFramework) {
+        case 'Drupal8':
+        case 'Drupal':
+        case 'Drupal6':
+        case 'Backdrop':
+          $user = user_load($contact_list);
+          if ($user !== false) {
+            //get uf_name
+            $uf_name = $user->mail;
+          }
+          break;
+        case 'Joomla':
+          $user = JFactory::getUser($contact_list);
+          if ($user->id !== 0) {
+            //get uf_name
+            $uf_name = $user->email;
+          }
+          break;
+        case 'WordPress':
+          $user = get_user_by('id', $contact_list);
+          if ($user !== false) {
+            //get uf_name
+            $uf_name = $user->user_email;
+          }
+          break;
+        default:
+          throw new \Exception("Unknown userFramework. Supported frameworks are Joomla, WordPress, Drupal, and Backdrop.");
+          break;
+      }
+
+      if ($uf_name === null) {
+        throw new \Exception("Unable to load user with UF ID {$contact_list}");
+      }
+      
       //set uf_match for the contact      
       $params = array(
         'uf_id' => $contact_list,
