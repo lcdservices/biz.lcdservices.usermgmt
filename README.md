@@ -1,15 +1,13 @@
 # biz.lcdservices.usermgmt
 
-![Screenshot](/images/screenshot.png)
-
-(*FIXME: In one or two paragraphs, describe what the extension does and why one would download it. *)
+Provides a utility from the Contact record's Actions button to manage the user account connection. This allows you to disassociate a contact from a user account or connect them to a different user.
 
 The extension is licensed under [AGPL-3.0](LICENSE.txt).
 
 ## Requirements
 
-* PHP v5.4+
-* CiviCRM (*FIXME: Version number*)
+* PHP v5.6+
+* CiviCRM 5+
 
 ## Installation (Web UI)
 
@@ -31,14 +29,6 @@ Sysadmins and developers may clone the [Git](https://en.wikipedia.org/wiki/Git) 
 install it with the command-line tool [cv](https://github.com/civicrm/cv).
 
 ```bash
-git clone https://github.com/FIXME/biz.lcdservices.usermgmt.git
+git clone https://github.com/lcdservices/biz.lcdservices.usermgmt
 cv en usermgmt
 ```
-
-## Usage
-
-(* FIXME: Where would a new user navigate to get started? What changes would they see? *)
-
-## Known Issues
-
-(* FIXME *)
